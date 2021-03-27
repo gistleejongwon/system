@@ -54,24 +54,10 @@ std::string System::Kernel() {
 
 // TODO: Return the system's memory utilization
 float System::MemoryUtilization() { 
-  std::ifstream filestream(LinuxParser::kProcDirectory + LinuxParser::kMeminfoFilename);
-  std::string line1, line2;
-  std::string ig, mem_total_str, mem_free_str;
-  float mem_total, mem_free;
-  if(filestream.is_open()){
-      std::getline(filestream, line1);
-      std::getline(filestream, line2);
-      std::istringstream sstr1(line1);
-      std::istringstream sstr2(line2);
-      sstr1 >> ig >> mem_total_str;
-      sstr2 >> ig >> mem_free_str;
-      
-      mem_total = stof(mem_total_str);
-      mem_free =  stof(mem_free_str);
-
-      return (mem_total - mem_free) / mem_total;
-  }
-  return 0.;
+  string path = LinuxParser::kProcDirectory + LinuxParser::kMeminfoFilename;
+  float mem_total = LinuxParser::find_value(path,"MemTotal:");
+  float mem_free = LinuxParser::find_value(path,"MemFree:");
+  return (mem_total - mem_free) / mem_total;
 }
 
 
@@ -82,54 +68,18 @@ std::string System::OperatingSystem() {
 
 // TODO: Return the number of processes actively running on the system
 int System::RunningProcesses() {
-  std::ifstream filestream(LinuxParser::kProcDirectory + LinuxParser::kStatFilename);
-  if(filestream.is_open()){
-    std::string line;
-    std::string key;
-    int value;
-    while(!filestream.eof()){
-      std::getline(filestream,line);
-      std::istringstream sstr(line);
-      while(sstr >> key >> value){
-        if (key == "procs_running"){
-          return value;
-        }
-      }
-    }
-  }
-  return 0;
+  string path = LinuxParser::kProcDirectory + LinuxParser::kStatFilename;
+  return LinuxParser::find_value(path,"procs_running");
 }
 
 // TODO: Return the total number of processes on the system
 int System::TotalProcesses() { 
-  std::ifstream filestream(LinuxParser::kProcDirectory + LinuxParser::kStatFilename);
-  if(filestream.is_open()){
-    std::string line;
-    std::string key;
-    int value;
-    while(!filestream.eof()){
-      std::getline(filestream,line);
-      std::istringstream sstr(line);
-      while(sstr >> key >> value){
-        if (key == "processes"){
-          return value;
-        }
-      }
-    }
-  }
-  return 0;
+  string path = LinuxParser::kProcDirectory + LinuxParser::kStatFilename;
+  return LinuxParser::find_value(path,"processes");
 }
 
 // TODO: Return the number of seconds since the system started running
 long int System::UpTime(){
-  std::ifstream filestream(LinuxParser::kProcDirectory + LinuxParser::kUptimeFilename);
-  if (filestream.is_open()){
-    std::string line;
-    std::getline(filestream,line);
-    std::istringstream sstr(line);
-    float time;
-    sstr >> time;
-    return (long int) time;
-  }
-  return 0;
+  string path = LinuxParser::kProcDirectory + LinuxParser::kUptimeFilename;
+  return LinuxParser::pick_value(path,0);
 }
